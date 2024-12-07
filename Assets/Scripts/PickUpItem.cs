@@ -99,8 +99,15 @@ public class PickUpItem : MonoBehaviour
         {
             if (highlightedObject.transform.parent != null && highlightedObject.transform.parent.CompareTag("TruckPosition"))
             {
+                if (!dropInTruck.GetTruckPosition(highlightedObject.transform.parent).canRemove)
+                {
+                    interactionText.text = "Whoops, something on top, get it off! ";
+                    audioSource.PlayOneShot(audioSource.clip);
+                    return;
+                }
                 dropInTruck.RemoveItemFromPosition(highlightedObject.transform.parent);
                 highlightedObject.transform.SetParent(null);
+                
             }
             PickUp(highlightedObject);
         }
@@ -149,7 +156,9 @@ public class PickUpItem : MonoBehaviour
             float maxDistance = 1.0f;           
             DropInTruck.TruckPosition nearestPosition = dropInTruck.FindNearestAvailablePosition(heldObject, maxDistance);
 
-            if (nearestPosition != null)
+         
+
+            if (nearestPosition != null && nearestPosition.position.gameObject.activeInHierarchy)
             {               
                 dropInTruck.PlaceItemInPosition(heldObject, nearestPosition);
             }

@@ -10,7 +10,8 @@ public class DropInTruck : MonoBehaviour
         public Transform position;
         public GameObject ghostObject;
         public bool isOccupied = false;
-        public GameObject compatibleItem; 
+        public GameObject compatibleItem;
+        public bool canRemove = false;
     }
 
     private int counter = 0;
@@ -54,6 +55,7 @@ public class DropInTruck : MonoBehaviour
 
     public void PlaceItemInPosition(GameObject item, TruckPosition position)
     {
+
         item.GetComponent<Rigidbody>().isKinematic = true;
         item.transform.position = position.position.position;
         item.transform.rotation = position.position.rotation;
@@ -61,7 +63,17 @@ public class DropInTruck : MonoBehaviour
 
         position.ghostObject.SetActive(false);
         position.isOccupied = true;
+        position.canRemove = true;
+        
+        if (counter-1 != -1)
+        {
+            itemPositions[counter - 1].canRemove = false;
+        }
         counter++;
+        if(itemPositions.Count>counter )
+        {
+            itemPositions[counter].position.gameObject.SetActive(true);
+         }
         UpdateText();
     }
 
@@ -73,13 +85,40 @@ public class DropInTruck : MonoBehaviour
         {
             freedPosition.isOccupied = false;
             freedPosition.ghostObject.SetActive(true);
+            freedPosition.canRemove = false;
+            if (itemPositions.Count > counter)
+            {
+                itemPositions[counter].position.gameObject.SetActive(false);
+            }
             counter--;
+            
+            if (counter-1 != -1)
+            {
+                itemPositions[counter-1].canRemove = true;
+            }
+
             UpdateText();
+
         }
     }
 
+    public TruckPosition GetTruckPosition(Transform itemPosition)
+    {
+        TruckPosition freedPosition = itemPositions.Find(pos => pos.position == itemPosition);
+        if(freedPosition!=null)
+        {
+            return freedPosition;
+        }
+        return null;
+    }
+
+    
     private void UpdateText()
     {
         itemsText.text = "Items in car: " + counter + "/" + itemPositions.Count;
+        if(counter == itemPositions.Count)
+        {
+            itemsText.text = "<color=#FF0000>You win!!!</color>"; 
+        }
     }
 }
